@@ -81,7 +81,7 @@ class StockAutoCountInterface:
             if self.result6["Combined_ID"].str.contains(row["UID"]).any():
                 self.df_concat.loc[index, "AccountName"]=self.result6[self.result6["Combined_ID"].str.strip()==row["UID"]]["Task"].values[0]
                 self.df_concat.loc[index, "Block"]=self.result6[self.result6["Combined_ID"].str.strip()==row["UID"]]["Block"].values[0]
-                self.df_concat.loc[index, "Account_Code"]=self.result6[self.result6["Combined_ID"].str.strip()==row['UID']]["Account_Code"].values[0]
+                self.df_concat.loc[index, "AccountCode"]=self.result6[self.result6["Combined_ID"].str.strip()==row['UID']]["Account_Code"].values[0]
 
         # generate the status code e.g Mature/Replant/Others
         for index, row in self.df_concat.iterrows():
@@ -92,7 +92,24 @@ class StockAutoCountInterface:
                                        
         # generate Account Code
         for index, row in self.df_concat.iterrows():
-            if row[
+            if row["Status"]=="Mature":
+                self.df_concat.loc[index, "Account_Code"]=status["Mature"]+"-"+row["AccountCode"]
+            elif row["Status"]=="Replant":
+                self.df_concat.loc[index, "Account_Code"]=status["Replant"]+"-"+row["AccountCode"]
+            elif row["Status"]=="Others":
+                self.df_concat.loc[index, "Account_Code"]=status["Others"]+"-"+row["AccountCode"]
+
+        for index, row in self.df_concat.iterrows():
+            if row["Block"]=="OTHERS" and row["AccountCode"]=="U001":
+                self.df_concat.loc[index, "Account_Code"]="700-U001"
+            elif row["Block"]=="OTHERS":
+                self.df_concat.loc[index, "Account_Code"]="700-U001"
+
+        # make uppercase AccountName column description
+        self.df_concat["AccountName"]=self.df_concat["AccountName"].str.upper()
+        
+                
+                     
             
                 
             
