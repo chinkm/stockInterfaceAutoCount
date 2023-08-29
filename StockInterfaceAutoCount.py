@@ -108,16 +108,15 @@ class StockAutoCountInterface:
         # make uppercase AccountName column description
         self.df_concat["AccountName"]=self.df_concat["AccountName"].str.upper()
         
-                
-                     
-            
-                
-            
-            
+          
 
     def generateJVInterface(self):
+        fontStyle=Font(name="Tahoma", size=8)
+        groupbyResult=self.df_concat.groupby(["AccountName", "Block", "Account_Code", "Status", "Stock", "Unit", "Price"], dropna=False).aggregate({"TotalPrice":"sum", "Quantity1":"sum"})
+        updateResult=groupbyResult.reset_index().replace({np.nan:''})
         
-        print(self.df_concat)
+        
+        
     
 
 companyName="Pyon Estate"
