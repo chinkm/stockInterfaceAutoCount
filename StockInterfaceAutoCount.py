@@ -107,6 +107,9 @@ class StockAutoCountInterface:
 
         # make uppercase AccountName column description
         self.df_concat["AccountName"]=self.df_concat["AccountName"].str.upper()
+
+        # generate Month Column in df_concat
+        self.df_concat["Month"]=self.df_concat["Date"].apply(lambda x: x.strftime('%B %Y'))
         
           
 
@@ -114,6 +117,47 @@ class StockAutoCountInterface:
         fontStyle=Font(name="Tahoma", size=8)
         groupbyResult=self.df_concat.groupby(["AccountName", "Block", "Account_Code", "Status", "Stock", "Unit", "Price"], dropna=False).aggregate({"TotalPrice":"sum", "Quantity1":"sum"})
         updateResult=groupbyResult.reset_index().replace({np.nan:''})
+        wb=load_workbook(filename="C:\\Users\\User\\Desktop\\WorkingFolder\\Project_ReadMasterSheet\\Import Journal Entry-Stock.xlsx")
+        sheet2=wb["Sheet2"]
+        sheet1=wb.copy_worksheet(sheet2)
+        rows=4
+        
+        for index, row in updateResult.iterrows():
+            sheet1["F"+str(rows)]=row['AccountName']+" - "+"{:.3f}".format(row['Quantity1'])+" "+row['Unit']+" @ RM"+str(row['Price'])
+            sheet1["F"+str(rows)].font=fontStyle
+            sheet1["K"+str(rows)]=row['Account_Code']
+            sheet1["K"+str(rows)].font=fontStyle
+            sheet1["M"+str(rows)]=row['Block']
+            sheet1["M"+str(rows)].font=fontStyle
+            sheet1["N"+str(rows)]="MATERIAL"
+            sheet1["N"+str(rows)].font=fontStyle
+            sheet1["R"+str(rows)]="{:.2f}".format(row['Quantity1'])+" "+row['Unit']
+            sheet1["R"+str(rows)].font=fontStyle
+            sheet1["Y"+str(rows)]=float("{:.2f}".format(row['TotalPrice']))
+            sheet1["Y"+str(rows)].number_format="0.00"
+            sheet1["Y"+str(rows)].font=fontStyle
+            rows=rows+1
+
+        sheet1["Z"+str(rows)]=float("{:.2f}".format(groupbyResult["TotalPrice"].sum()))
+        sheet1["Z"+str(rows)].number_format="0.00"
+        sheet1["Z"+str(rows)].font=fontStyle
+        sheet1["K"+str(rows)]="410-P001"
+        sheet1["K"+str(rows)].font=fontStyle
+        sheet1["F"+str(rows)]="FERTILIZER & CHEMICAL ISSUED FOR THE MONTH "+self.df_concat["Month"].values[0].upper()
+        sheet1["F"+str(rows)].font=fontStyle
+        sheet1["P4"]="BEING FERTILIZER & CHEMICAL ISSUED FOR THE MONTH " +self.df_concat["Month"].values[0].upper()
+        
+        sheet1["C4"]=str(calendar.monthrange(int(self.df_concat['Date'].dt.strftime('%Y').values[0]), int(self.df_concat['Date'].dt.strftime('%m').values[0]))[1])+"/"+str(self.df_concat['Date'].dt.strftime('%m').values[0])+"/"+str(self.df_concat['Date'].dt.strftime('%Y').values[0])
+        sheet1["C4"].font=fontStyle                                     
+        sheet1["Y"+str(rows+8)]="=SUM(Y4:Y"+str(rows+7)+")"
+        sheet1["Z"+str(rows+8)]="=SUM(Z4:Z"+str(rows+7)+")"
+
+        sheet1.title=self.companyName+"_"+self.df_concat["Month"].values[0]
+        
+        wb.save("Import Journal Entry-Stock.xlsx")
+        os.startfile("Import Journal Entry-Stock.xlsx")
+       
+        print(self.df_concat)
         
         
         
