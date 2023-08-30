@@ -62,7 +62,7 @@ class StockAutoCountInterface:
             sql5="SELECT * FROM [BlockListT] WHERE Company LIKE '"+companyName+"'"
             self.result5=pd.read_sql(sql5, conn)
 
-            sql6=r"SELECT MasterQ.[Combined_ID], MasterQ.[Company], MasterQ.Day, MasterQ.Block, MasterQ.Task, MasterQ.Job, TaskListT.[Account_Code]FROM ([MasterQ] INNER JOIN StockSQ ON MasterQ.[Combined_ID]=StockSQ.UID) INNER JOIN TaskListT ON MasterQ.[Task]=TaskListT.[Task] WHERE Company LIKE '"+companyName+"'"+" ORDER BY Combined_ID"
+            sql6=r"SELECT MasterQ.[Combined_ID], MasterQ.[Company], MasterQ.Day, MasterQ.Block, MasterQ.Task, MasterQ.Job, TaskListT.[Account_Code], StockListT.[Stock Type] FROM (([MasterQ] INNER JOIN StockSQ ON MasterQ.[Combined_ID]=StockSQ.UID) INNER JOIN TaskListT ON MasterQ.[Task]=TaskListT.[Task]) INNER JOIN StockListT ON StockSQ.Stock=StockListT.[Stock Name] WHERE Company LIKE '"+companyName+"'"+" ORDER BY Combined_ID"
             self.result6=pd.read_sql(sql6, conn)
 
         except Exception as e:
@@ -82,6 +82,7 @@ class StockAutoCountInterface:
                 self.df_concat.loc[index, "AccountName"]=self.result6[self.result6["Combined_ID"].str.strip()==row["UID"]]["Task"].values[0]
                 self.df_concat.loc[index, "Block"]=self.result6[self.result6["Combined_ID"].str.strip()==row["UID"]]["Block"].values[0]
                 self.df_concat.loc[index, "AccountCode"]=self.result6[self.result6["Combined_ID"].str.strip()==row['UID']]["Account_Code"].values[0]
+                self.df_concat.loc[index, "Stock Type"]=self.result6[self.result6["Combined_ID"].str.strip()==row["UID"]]["Stock Type"].values[0]
 
         # generate the status code e.g Mature/Replant/Others
         for index, row in self.df_concat.iterrows():
@@ -115,7 +116,7 @@ class StockAutoCountInterface:
 
     def generateJVInterface(self):
         fontStyle=Font(name="Tahoma", size=8)
-        groupbyResult=self.df_concat.groupby(["AccountName", "Block", "Account_Code", "Status", "Stock", "Unit", "Price"], dropna=False).aggregate({"TotalPrice":"sum", "Quantity1":"sum"})
+        groupbyResult=self.df_concat.groupby(["AccountName", "Block", "Account_Code", "Status", "Stock", "Unit", "Price", "Stock Type"], dropna=False).aggregate({"TotalPrice":"sum", "Quantity1":"sum"})
         updateResult=groupbyResult.reset_index().replace({np.nan:''})
         wb=load_workbook(filename="C:\\Users\\User\\Desktop\\WorkingFolder\\Project_ReadMasterSheet\\Import Journal Entry-Stock.xlsx")
         sheet2=wb["Sheet2"]
@@ -123,8 +124,12 @@ class StockAutoCountInterface:
         rows=4
         
         for index, row in updateResult.iterrows():
-            sheet1["F"+str(rows)]=row['AccountName']+" - "+"{:.3f}".format(row['Quantity1'])+" "+row['Unit']+" @ RM"+str(row['Price'])
-            sheet1["F"+str(rows)].font=fontStyle
+            if row["Stock Type"]=="Chemical":
+                sheet1["F"+str(rows)]=row['AccountName']+" - " +row["Stock"]+" "+"{:.3f}".format(row['Quantity1'])+" "+row['Unit']+" @ RM"+str(row['Price'])
+                sheet1["F"+str(rows)].font=fontStyle
+            else:
+                sheet1["F"+str(rows)]="MANURING "+row['AccountName']+" - "+"{:.3f}".format(row['Quantity1'])+" "+row['Unit']+" @ RM"+str(row['Price'])
+                sheet1["F"+str(rows)].font=fontStyle
             sheet1["K"+str(rows)]=row['Account_Code']
             sheet1["K"+str(rows)].font=fontStyle
             sheet1["M"+str(rows)]=row['Block']
@@ -138,17 +143,36 @@ class StockAutoCountInterface:
             sheet1["Y"+str(rows)].font=fontStyle
             rows=rows+1
 
-        sheet1["Z"+str(rows)]=float("{:.2f}".format(groupbyResult["TotalPrice"].sum()))
-        sheet1["Z"+str(rows)].number_format="0.00"
-        sheet1["Z"+str(rows)].font=fontStyle
-        sheet1["K"+str(rows)]="410-P001"
-        sheet1["K"+str(rows)].font=fontStyle
-        sheet1["F"+str(rows)]="FERTILIZER & CHEMICAL ISSUED FOR THE MONTH "+self.df_concat["Month"].values[0].upper()
-        sheet1["F"+str(rows)].font=fontStyle
-        sheet1["P4"]="BEING FERTILIZER & CHEMICAL ISSUED FOR THE MONTH " +self.df_concat["Month"].values[0].upper()
         
+        sheet1["P4"]="BEING FERTILIZER & CHEMICAL ISSUED FOR THE MONTH " +self.df_concat["Month"].values[0].upper()
+        sheet1["P4"].font=fontStyle
         sheet1["C4"]=str(calendar.monthrange(int(self.df_concat['Date'].dt.strftime('%Y').values[0]), int(self.df_concat['Date'].dt.strftime('%m').values[0]))[1])+"/"+str(self.df_concat['Date'].dt.strftime('%m').values[0])+"/"+str(self.df_concat['Date'].dt.strftime('%Y').values[0])
         sheet1["C4"].font=fontStyle                                     
+        
+        # Segregating out Fertilizer and Chemical Stock listed in the JV Interface Report
+        groupbyResult=self.df_concat.groupby(["Stock Type", "Stock", "Unit", "Price"], dropna=False).aggregate({"TotalPrice":"sum", "Quantity1":"sum"})
+        updateResult=groupbyResult.reset_index().replace({np.nan:''})
+        
+        for index, row in updateResult.iterrows():
+            if row["Stock Type"]=="Chemical":
+                sheet1["Z"+str(rows)]=round(row["TotalPrice"],2)
+                sheet1["Z"+str(rows)].number_format="0.00"
+                sheet1["Z"+str(rows)].font=fontStyle
+                sheet1["K"+str(rows)]="300-C001"
+                sheet1["K"+str(rows)].font=fontStyle
+                sheet1["F"+str(rows)]=row["Stock"].upper()+" "+str(round(row["Quantity1"],2))+" "+row["Unit"][0]+"@ RM"+str(round(row["Price"],3))+" ISSUED FOR "+str(self.df_concat['Date'].dt.strftime('%m').values[0])+"/"+str(self.df_concat['Date'].dt.strftime('%Y').values[0])
+                sheet1["F"+str(rows)].font=fontStyle
+                rows=rows+1
+            elif row["Stock Type"]=="Fertiliser":
+                sheet1["Z"+str(rows)]=round(row["TotalPrice"],2)
+                sheet1["Z"+str(rows)].number_format="0.00"
+                sheet1["Z"+str(rows)].font=fontStyle
+                sheet1["K"+str(rows)]="300-F001"
+                sheet1["K"+str(rows)].font=fontStyle
+                sheet1["F"+str(rows)]=row["Stock"].upper()+" "+str(round(row["Quantity1"],2))+" "+row["Unit"][0]+"@ RM"+str(round(row["Price"],3))+" ISSUED FOR "+str(self.df_concat['Date'].dt.strftime('%m').values[0])+"/"+str(self.df_concat['Date'].dt.strftime('%Y').values[0])
+                sheet1["F"+str(rows)].font=fontStyle
+                rows=rows+1
+           
         sheet1["Y"+str(rows+8)]="=SUM(Y4:Y"+str(rows+7)+")"
         sheet1["Z"+str(rows+8)]="=SUM(Z4:Z"+str(rows+7)+")"
 
@@ -157,11 +181,7 @@ class StockAutoCountInterface:
         wb.save("Import Journal Entry-Stock.xlsx")
         os.startfile("Import Journal Entry-Stock.xlsx")
        
-        print(self.df_concat)
         
-        
-        
-    
 
 companyName="Pyon Estate"
 #companyName=sys.argv[1].strip('\"')
