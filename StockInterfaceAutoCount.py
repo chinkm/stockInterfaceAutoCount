@@ -10,8 +10,8 @@ from openpyxl import load_workbook
 from openpyxl.styles import Font
 from tkinter import messagebox
 
-pd.set_option('display.max_columns', None)
-pd.set_option('display.max_rows', None)
+#pd.set_option('display.max_columns', None)
+#pd.set_option('display.max_rows', None)
 
 
 class StockAutoCountInterface:
@@ -183,14 +183,14 @@ class StockAutoCountInterface:
        
         
 
-companyName="Pyon Estate"
-#companyName=sys.argv[1].strip('\"')
-#fullPath=sys.argv[2].strip('\"')
+
+companyName=sys.argv[1].strip('\"')
+fullPath=sys.argv[2].strip('\"')
 
 
 connection_string=(
     r"DRIVER={Microsoft Access Driver (*.mdb, *.accdb)};"
-    r"DBQ=C:\Users\User\Desktop\WorkingFolder\Project_ReadMasterSheet\Master Sheet - Estate 0523.accdb;"
+    r"DBQ="+fullPath+';"'
     r"ExtendedAnsiSQL=1;")
 
 
