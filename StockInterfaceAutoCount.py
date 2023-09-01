@@ -177,7 +177,7 @@ class StockAutoCountInterface:
         sheet1["Z"+str(rows+8)]="=SUM(Z4:Z"+str(rows+7)+")"
 
         sheet1.title=self.companyName+"_"+self.df_concat["Month"].values[0]
-        
+        wb.active=len(wb.sheetnames)-1 
         wb.save("Import Journal Entry-Stock.xlsx")
         os.startfile("Import Journal Entry-Stock.xlsx")
        
