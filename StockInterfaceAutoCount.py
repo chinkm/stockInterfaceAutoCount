@@ -74,6 +74,11 @@ class StockAutoCountInterface:
 
     
     def generateAccountCode(self):
+
+        if self.result.empty:
+            messagebox.showinfo("askquestion", self.companyName+" has no data in the database, Are you sure you have chosen the right company?")
+            sys.exit(0)
+                
         status={"Mature":"600", "Replant": "220", "Others": "710"}
         # match Combined_ID from result6 to UID from df_concat
         for index, row in self.df_concat.iterrows():
@@ -119,6 +124,8 @@ class StockAutoCountInterface:
         groupbyResult=self.df_concat.groupby(["AccountName", "Block", "Account_Code", "Status", "Stock", "Unit", "Price", "Stock Type"], dropna=False).aggregate({"TotalPrice":"sum", "Quantity1":"sum"})
         updateResult=groupbyResult.reset_index().replace({np.nan:''})
         wb=load_workbook(filename="C:\\Users\\User\\Desktop\\WorkingFolder\\Project_ReadMasterSheet\\Import Journal Entry-Stock.xlsx")
+                
+            
         sheet2=wb["Sheet2"]
         sheet1=wb.copy_worksheet(sheet2)
         rows=4
@@ -177,9 +184,15 @@ class StockAutoCountInterface:
         sheet1["Z"+str(rows+8)]="=SUM(Z4:Z"+str(rows+7)+")"
 
         sheet1.title=self.companyName+"_"+self.df_concat["Month"].values[0]
-        wb.active=len(wb.sheetnames)-1 
-        wb.save("Import Journal Entry-Stock.xlsx")
-        os.startfile("Import Journal Entry-Stock.xlsx")
+        wb.active=len(wb.sheetnames)-1
+        try:
+            wb.save("Import Journal Entry-Stock.xlsx")
+            os.startfile("Import Journal Entry-Stock.xlsx")
+        except IOError:
+            messagebox.showinfo("File Open Error", "Someone has opened the Excel Import Journal Entry file. Close the file and try again")
+        
+            
+        
        
         
 
