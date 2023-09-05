@@ -1,4 +1,5 @@
-import sqlalchemy as sa
+#import sqlalchemy as sa
+import pyodbc
 import pandas as pd
 import numpy as np
 from datetime import date
@@ -6,29 +7,33 @@ import datetime
 import calendar
 import sys
 import os
+import re
 from openpyxl import load_workbook
 from openpyxl.styles import Font
 from tkinter import messagebox
+import warnings
 
 #pd.set_option('display.max_columns', None)
 #pd.set_option('display.max_rows', None)
 
+warnings.filterwarnings("ignore")
 
 class StockAutoCountInterface:
     def __init__(self, connection_string, companyName):
         self.connection_string=connection_string
         self.companyName=companyName
 
+    # sqlalchemy library was not used and replaced by pyodbc so the connectionString function was unnecessary 
+    #def connectionString(self):
+        #connection_url=sa.engine.URL.create("access+pyodbc", query={"odbc_connect": self.connection_string})
 
-    def connectionString(self):
-        connection_url=sa.engine.URL.create("access+pyodbc", query={"odbc_connect": self.connection_string})
-
-        self.engine=sa.create_engine(connection_url, echo=False)
+        #self.engine=sa.create_engine(connection_url, echo=False)
 
     def sqlQryDB(self):
 
         try:
-            conn=self.engine.connect()
+            #conn=self.engine.connect()
+            conn-pyodbc.connect(self.connection_string)
 
             sql="SELECT * FROM [StockListT]"
             self.result=pd.read_sql(sql, conn)
@@ -55,10 +60,7 @@ class StockAutoCountInterface:
 
             self.df_concat=pd.concat(frames, axis=0, ignore_index=True)
             
-                       
-            #sql4="SELECT * FROM [TaskListT]"
-            #self.result4=pd.read_sql(sql4, conn)
-
+            
             sql5="SELECT * FROM [BlockListT] WHERE Company LIKE '"+companyName+"'"
             self.result5=pd.read_sql(sql5, conn)
 
@@ -200,17 +202,22 @@ class StockAutoCountInterface:
 companyName=sys.argv[1].strip('\"')
 fullPath=sys.argv[2].strip('\"')
 
-
+'''
 connection_string=(
     r"DRIVER={Microsoft Access Driver (*.mdb, *.accdb)};"
     r"DBQ="+fullPath+';"'
     r"ExtendedAnsiSQL=1;")
+'''
 
+connection_string=(
+    r"DRIVER={Microsoft Access Driver (*.mdb, *.accdb)};"
+    r"DBQ="+fullPath+';"'
+    r"Provider=MSDASQL")
 
 
 obj=StockAutoCountInterface(connection_string, companyName)
 
-obj.connectionString()
+#obj.connectionString()
 
 obj.sqlQryDB()
 
