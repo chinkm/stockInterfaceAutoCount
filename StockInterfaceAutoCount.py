@@ -33,7 +33,7 @@ class StockAutoCountInterface:
 
         try:
             #conn=self.engine.connect()
-            conn-pyodbc.connect(self.connection_string)
+            conn=pyodbc.connect(self.connection_string)
 
             sql="SELECT * FROM [StockListT]"
             self.result=pd.read_sql(sql, conn)
@@ -81,7 +81,7 @@ class StockAutoCountInterface:
             messagebox.showinfo("askquestion", self.companyName+" has no data in the database, Are you sure you have chosen the right company?")
             sys.exit(0)
                 
-        status={"Mature":"600", "Replant": "220", "Others": "710"}
+        status={"Mature":"600", "Immature": "220", "Others": "710"}
         # match Combined_ID from result6 to UID from df_concat
         for index, row in self.df_concat.iterrows():
             # generate AccountName & Block Column in df_concat dataset
@@ -91,7 +91,7 @@ class StockAutoCountInterface:
                 self.df_concat.loc[index, "AccountCode"]=self.result6[self.result6["Combined_ID"].str.strip()==row['UID']]["Account_Code"].values[0]
                 self.df_concat.loc[index, "Stock Type"]=self.result6[self.result6["Combined_ID"].str.strip()==row["UID"]]["Stock Type"].values[0]
 
-        # generate the status code e.g Mature/Replant/Others
+        # generate the status code e.g Mature/Immature/Others
         for index, row in self.df_concat.iterrows():
             if self.result5["Block"].eq(row["Block"]).any():
                 self.df_concat.loc[index, "Status"]=self.result5[self.result5["Block"]==row["Block"]]["Status"].values[0]
@@ -102,8 +102,8 @@ class StockAutoCountInterface:
         for index, row in self.df_concat.iterrows():
             if row["Status"]=="Mature":
                 self.df_concat.loc[index, "Account_Code"]=status["Mature"]+"-"+row["AccountCode"]
-            elif row["Status"]=="Replant":
-                self.df_concat.loc[index, "Account_Code"]=status["Replant"]+"-"+row["AccountCode"]
+            elif row["Status"]=="Immature":
+                self.df_concat.loc[index, "Account_Code"]=status["Immature"]+"-"+row["AccountCode"]
             elif row["Status"]=="Others":
                 self.df_concat.loc[index, "Account_Code"]=status["Others"]+"-"+row["AccountCode"]
 
@@ -112,6 +112,8 @@ class StockAutoCountInterface:
                 self.df_concat.loc[index, "Account_Code"]="700-U001"
             elif row["Block"]=="OTHERS":
                 self.df_concat.loc[index, "Account_Code"]="700-U001"
+            elif (bool(re.search("^P3.*",row["AccountCode"]))):
+                self.df_concat.loc[index, "Account_Code"]="220-"+row["AccountCode"]
 
         # make uppercase AccountName column description
         self.df_concat["AccountName"]=self.df_concat["AccountName"].str.upper()
