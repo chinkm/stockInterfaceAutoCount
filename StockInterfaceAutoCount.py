@@ -38,19 +38,19 @@ class StockAutoCountInterface:
             sql="SELECT * FROM [StockListT]"
             self.result=pd.read_sql(sql, conn)
             
-            sql1="SELECT IIf([CompanyShort]='SE','Seroi',IIf([CompanyShort]='GM','Golden Majuharta',IIf([CompanyShort]='ES','Evergreen Status',IIf([CompanyShort]='PE','Pyon Estate',IIf([CompanyShort]='FS','FSM'))))) \
+            sql1="SELECT IIf([CompanyShort]='SE','Sxxxxi',IIf([CompanyShort]='GM','Gxxxxxxxxxxxa',IIf([CompanyShort]='ES','Exxxxxxxxxxxxxs',IIf([CompanyShort]='PE','Pxxxxxxxxxxe',IIf([CompanyShort]='FS','FSM'))))) \
                     AS Company, StockSQ.ID, StockSQ.Stock, StockSQ.Quantity, StockSQ.Unit, StockSQ.UID, StockSQ.Price1 AS Price, StockSQ.Quantity1 AS Quantity1, Price*Quantity1 AS TotalPrice, Mid([UID],1,2) AS CompanyShort, \
                     CDate(Mid([UID],5,2) & ',' & Mid([UID],7,2) & ',' & Mid([UID],9,2)) AS [Date], StockSQ.[Sub-Company] FROM StockSQ WHERE Company LIKE '"+companyName+"'"+" ORDER BY UID"
             self.result1=pd.read_sql(sql1, conn)
             
             
-            sql2="SELECT IIf([CompanyShort]='SE','Seroi',IIf([CompanyShort]='GM','Golden Majuharta',IIf([CompanyShort]='ES','Evergreen Status',IIf([CompanyShort]='PE','Pyon Estate',IIf([CompanyShort]='FS','FSM'))))) AS Company, \
+            sql2="SELECT IIf([CompanyShort]='SE','Sxxxxi',IIf([CompanyShort]='GM','Gxxxxxxxxxxxxa',IIf([CompanyShort]='ES','Exxxxxxxxxxxxxs',IIf([CompanyShort]='PE','Pxxxxxxxxxe',IIf([CompanyShort]='FS','FSM'))))) AS Company, \
                   StockSQ.ID, StockSQ.Stock, StockSQ.Quantity, StockSQ.Unit, StockSQ.UID, StockSQ.Price2 AS Price, StockSQ.Quantity2 AS Quantity1, Price*Quantity1 AS TotalPrice, Mid([UID],1,2) AS CompanyShort, CDate(Mid([UID],5,2) \
                   & ',' & Mid([UID],7,2) & ',' & Mid([UID],9,2)) AS [Date], StockST.[Sub-Company] FROM StockSQ WHERE StockSQ.Price2<>0 AND StockSQ.Quantity2<>0 AND Company LIKE '"+companyName+"'"+" ORDER BY UID"
             self.result2=pd.read_sql(sql2, conn)
 
             
-            sql3="SELECT IIf([CompanyShort]='SE','Seroi',IIf([CompanyShort]='GM','Golden Majuharta',IIf([CompanyShort]='ES','Evergreen Status',IIf([CompanyShort]='PE','Pyon Estate',IIf([CompanyShort]='FS','FSM'))))) AS Company, \
+            sql3="SELECT IIf([CompanyShort]='SE','Sxxxxi',IIf([CompanyShort]='GM','Gxxxxxxxxxxxxa',IIf([CompanyShort]='ES','Exxxxxxxxxxxxxxs',IIf([CompanyShort]='PE','Pxxxxxxxxxxe',IIf([CompanyShort]='FS','FSM'))))) AS Company, \
                   StockSQ.ID, StockSQ.Stock, StockSQ.Quantity, StockSQ.Unit, StockSQ.UID, StockSQ.Price3 AS Price, StockSQ.Quantity3 AS Quantity1, Price*Quantity1 AS TotalPrice, Mid([UID],1,2) AS CompanyShort, CDate(Mid([UID],5,2) \
                   & ',' & Mid([UID],7,2) & ',' & Mid([UID],9,2)) AS [Date], StockST.[Sub-Company] FROM StockSQ WHERE StockSQ.Price3<>0 AND StockSQ.Quantity3<>0 AND Company LIKE '"+companyName+"'"+" ORDER BY UID"
             self.result3=pd.read_sql(sql3, conn)
