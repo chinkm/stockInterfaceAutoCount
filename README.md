@@ -1,4 +1,5 @@
 Estate Data Integration & Journal Entry Automation
+
 Tech Stack: Python, PyODBC, Pandas, NumPy, OpenPyXL, MS Access
 
 Overview
