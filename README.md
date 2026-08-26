@@ -1,17 +1,28 @@
-# MS Access Database to Journal Voucher Converter
-This Python script is designed to read data from a Microsoft Access database and extract stock in/stock out information, as well as unit prices of the stocks. It utilizes popular libraries such as pyodbc, pandas, and openpyxl to accomplish this task. Additionally, it generates Account Codes based on the data from the database and formats the extracted data into a Journal Voucher that can be easily interfaced with an accounting software.
+Estate Data Integration & Journal Entry Automation
+Tech Stack: Python, PyODBC, Pandas, NumPy, OpenPyXL, MS Access
 
-Prerequisites
+Overview
+This project automates the integration of estate stock data from Microsoft Access databases into structured journal entry reports. It connects to multiple tables, consolidates stock transactions, generates account codes based on plantation status (Mature, Replant, Others), and outputs a formatted Excel interface for accounting entries.
 
-Before using this script, you need to ensure you have the following prerequisites installed on your system:
+Features
+Database Integration: Connects to MS Access using pyodbc and retrieves stock, block, and task data.
 
-Python 3.x
-pyodbc library for database connectivity
-pandas for data manipulation
-openpyxl for Excel file handling
-Microsoft Access database file (.accdb) containing the relevant stock data
+Data Transformation: Cleans and merges multiple query results into a unified dataset with calculated totals.
 
+Automated Account Coding: Dynamically generates account codes based on block status and task type.
 
-Output
+Excel Report Generation: Uses OpenPyXL to produce journal entry reports with proper formatting, account codes, and monthly summaries.
 
-The script will generate a Journal Voucher in an Excel file format (.xlsx) based on the data extracted from the database. You can then use this Journal Voucher to interface with your accounting software.
+Error Handling: Provides user prompts if data is missing or files are locked.
+
+Problem Solved
+Estate staff previously had to manually reconcile stock usage, assign account codes, and prepare journal entries for fertilizer, chemicals, and other materials. This process was time‑consuming and error‑prone.
+
+Impact
+Reduced manual data entry and improved accuracy of journal entries.
+
+Standardized reporting format for easier review by finance teams.
+
+Saved significant time in monthly closing processes.
+
+Provided clear segregation of fertilizer, chemical, and other stock categories for better cost tracking.
