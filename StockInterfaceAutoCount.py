@@ -195,8 +195,6 @@ connection_string=(
 
 obj=StockAutoCountInterface(connection_string, companyName)
 
-#obj.connectionString()
-
 obj.sqlQryDB()
 
 obj.generateAccountCode()
