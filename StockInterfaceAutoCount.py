@@ -13,22 +13,13 @@ from openpyxl.styles import Font
 from tkinter import messagebox
 import warnings
 
-#pd.set_option('display.max_columns', None)
-#pd.set_option('display.max_rows', None)
-
 warnings.filterwarnings("ignore")
 
 class StockAutoCountInterface:
     def __init__(self, connection_string, companyName):
         self.connection_string=connection_string
         self.companyName=companyName
-
-    # sqlalchemy library was not used and replaced by pyodbc so the connectionString function was unnecessary 
-    #def connectionString(self):
-        #connection_url=sa.engine.URL.create("access+pyodbc", query={"odbc_connect": self.connection_string})
-
-        #self.engine=sa.create_engine(connection_url, echo=False)
-
+    
     def sqlQryDB(self):
 
         try:
@@ -38,19 +29,19 @@ class StockAutoCountInterface:
             sql="SELECT * FROM [StockListT]"
             self.result=pd.read_sql(sql, conn)
             
-            sql1="SELECT IIf([CompanyShort]='SE','Sxxxxi',IIf([CompanyShort]='GM','Gxxxxxxxxxxxa',IIf([CompanyShort]='ES','Exxxxxxxxxxxxxs',IIf([CompanyShort]='PE','Pxxxxxxxxxxe',IIf([CompanyShort]='FS','FSM'))))) \
+            sql1="SELECT IIf([CompanyShort]='SE','CompanyToLookUpSE',IIf([CompanyShort]='GM','CompanyToLookUpGM',IIf([CompanyShort]='ES','CompanyToLookUpES',IIf([CompanyShort]='PE','CompanyToLookUpPE',IIf([CompanyShort]='FS','FSM'))))) \
                     AS Company, StockSQ.ID, StockSQ.Stock, StockSQ.Quantity, StockSQ.Unit, StockSQ.UID, StockSQ.Price1 AS Price, StockSQ.Quantity1 AS Quantity1, Price*Quantity1 AS TotalPrice, Mid([UID],1,2) AS CompanyShort, \
                     CDate(Mid([UID],5,2) & ',' & Mid([UID],7,2) & ',' & Mid([UID],9,2)) AS [Date], StockSQ.[Sub-Company] FROM StockSQ WHERE Company LIKE '"+companyName+"'"+" ORDER BY UID"
             self.result1=pd.read_sql(sql1, conn)
             
             
-            sql2="SELECT IIf([CompanyShort]='SE','Sxxxxi',IIf([CompanyShort]='GM','Gxxxxxxxxxxxxa',IIf([CompanyShort]='ES','Exxxxxxxxxxxxxs',IIf([CompanyShort]='PE','Pxxxxxxxxxe',IIf([CompanyShort]='FS','FSM'))))) AS Company, \
+            sql2="SELECT IIf([CompanyShort]='SE','CompanyToLookUpSE',IIf([CompanyShort]='GM','CompanyToLookUpGM',IIf([CompanyShort]='ES','CompanyToLookUpES',IIf([CompanyShort]='PE','CompanyToLookUpPE',IIf([CompanyShort]='FS','FSM'))))) AS Company, \
                   StockSQ.ID, StockSQ.Stock, StockSQ.Quantity, StockSQ.Unit, StockSQ.UID, StockSQ.Price2 AS Price, StockSQ.Quantity2 AS Quantity1, Price*Quantity1 AS TotalPrice, Mid([UID],1,2) AS CompanyShort, CDate(Mid([UID],5,2) \
                   & ',' & Mid([UID],7,2) & ',' & Mid([UID],9,2)) AS [Date], StockST.[Sub-Company] FROM StockSQ WHERE StockSQ.Price2<>0 AND StockSQ.Quantity2<>0 AND Company LIKE '"+companyName+"'"+" ORDER BY UID"
             self.result2=pd.read_sql(sql2, conn)
 
             
-            sql3="SELECT IIf([CompanyShort]='SE','Sxxxxi',IIf([CompanyShort]='GM','Gxxxxxxxxxxxxa',IIf([CompanyShort]='ES','Exxxxxxxxxxxxxxs',IIf([CompanyShort]='PE','Pxxxxxxxxxxe',IIf([CompanyShort]='FS','FSM'))))) AS Company, \
+            sql3="SELECT IIf([CompanyShort]='SE','CompanyToLookUpSE',IIf([CompanyShort]='GM','CompanyToLookUpGM',IIf([CompanyShort]='ES','CompanyToLookUpES',IIf([CompanyShort]='PE','CompanyToLookUpPE,IIf([CompanyShort]='FS','FSM'))))) AS Company, \
                   StockSQ.ID, StockSQ.Stock, StockSQ.Quantity, StockSQ.Unit, StockSQ.UID, StockSQ.Price3 AS Price, StockSQ.Quantity3 AS Quantity1, Price*Quantity1 AS TotalPrice, Mid([UID],1,2) AS CompanyShort, CDate(Mid([UID],5,2) \
                   & ',' & Mid([UID],7,2) & ',' & Mid([UID],9,2)) AS [Date], StockST.[Sub-Company] FROM StockSQ WHERE StockSQ.Price3<>0 AND StockSQ.Quantity3<>0 AND Company LIKE '"+companyName+"'"+" ORDER BY UID"
             self.result3=pd.read_sql(sql3, conn)
@@ -127,7 +118,7 @@ class StockAutoCountInterface:
         fontStyle=Font(name="Tahoma", size=8)
         groupbyResult=self.df_concat.groupby(["AccountName", "Block", "Account_Code", "Status", "Stock", "Unit", "Price", "Stock Type"], dropna=False).aggregate({"TotalPrice":"sum", "Quantity1":"sum"})
         updateResult=groupbyResult.reset_index().replace({np.nan:''})
-        wb=load_workbook(filename="C:\\Users\\User\\Desktop\\WorkingFolder\\Project_ReadMasterSheet\\Import Journal Entry-Stock.xlsx")
+        wb=load_workbook(filename="C:\\Users\\User\\Desktop\\LocationToWorkingFolder\\LocationToExcelFile\\Import Journal Entry-Stock.xlsx")
                 
             
         sheet2=wb["Sheet2"]
@@ -153,7 +144,6 @@ class StockAutoCountInterface:
             sheet1["Y"+str(rows)].number_format="0.00"
             sheet1["Y"+str(rows)].font=fontStyle
             rows=rows+1
-
         
         sheet1["P4"]="BEING FERTILIZER & CHEMICAL ISSUED FOR THE MONTH " +self.df_concat["Month"].values[0].upper()
         sheet1["P4"].font=fontStyle
@@ -194,28 +184,14 @@ class StockAutoCountInterface:
             os.startfile("Import Journal Entry-Stock.xlsx")
         except IOError:
             messagebox.showinfo("File Open Error", "Someone has opened the Excel Import Journal Entry file. Close the file and try again")
-        
-            
-        
-       
-        
-
 
 companyName=sys.argv[1].strip('\"')
 fullPath=sys.argv[2].strip('\"')
-
-'''
-connection_string=(
-    r"DRIVER={Microsoft Access Driver (*.mdb, *.accdb)};"
-    r"DBQ="+fullPath+';"'
-    r"ExtendedAnsiSQL=1;")
-'''
 
 connection_string=(
     r"DRIVER={Microsoft Access Driver (*.mdb, *.accdb)};"
     r"DBQ="+fullPath+';"'
     r"Provider=MSDASQL")
-
 
 obj=StockAutoCountInterface(connection_string, companyName)
 
