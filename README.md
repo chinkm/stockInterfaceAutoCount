@@ -31,3 +31,7 @@ Standardized reporting format for easier review by finance teams.
 Saved significant time in monthly closing processes.
 
 Provided clear segregation of fertilizer, chemical, and other stock categories for better cost tracking.
+
+🔗 [LinkedIn](https://www.linkedin.com/in/chin-kee-ming-588685148)
+
+
